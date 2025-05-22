@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Chinese Quiz Game</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f3f3f3;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .quiz-container {
+      background: white;
+      padding: 2rem;
+      border-radius: 15px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.1);
+      width: 90%;
+      max-width: 600px;
+      text-align: center;
+    }
+
+    button {
+      margin: 0.5rem;
+      padding: 0.5rem 1rem;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    #choices {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+      gap: 10px;
+      margin: 1rem 0;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .correct {
+      color: green;
+    }
+
+    .wrong {
+      color: red;
+    }
+  </style>
+</head>
+<body>
+  <div class="quiz-container">
+    <h1>Chinese Quiz Game</h1>
+
+    <!-- Category Selection -->
+    <div id="category-select">
+      <h2>Select a category:</h2>
+      <select id="category">
+        <option value="0">(Chinese symbol) to Pinyin</option>
+        <option value="1">(Chinese symbol) to English</option>
+        <option value="2">(Pinyin) to Chinese symbol</option>
+        <option value="3">(Pinyin) to English</option>
+        <option value="4">(English word) to Chinese symbol</option>
+        <option value="5">(English word) to Pinyin</option>
+      </select><br>
+      <button onclick="startQuiz()">Start Quiz</button>
+    </div>
+
+    <!-- Quiz Area -->
+    <div id="question-area" class="hidden">
+      <p id="question"></p>
+      <div id="choices"></div>
+      <p id="feedback"></p>
+      <button onclick="nextQuestion()">Next</button>
+      <button onclick="goBack()">Back to Category</button>
+    </div>
+  </div>
+
+  <script>
+    const vocab = [
+      { chinese: "我", pinyin: "wǒ", english: "I, me" },
+      { chinese: "我们", pinyin: "wǒmen", english: "we, us (pl.)" },
+      { chinese: "你", pinyin: "nǐ", english: "you" },
+      { chinese: "他", pinyin: "tā", english: "he, him" },
+      { chinese: "她", pinyin: "tā", english: "she, her" },
+      { chinese: "这", pinyin: "zhè", english: "this" },
+      //   {chinese: "", pinyin: "", english: "" },
+      {chinese: "这儿", pinyin: "zhèr", english: "here" },
+      {chinese: "那", pinyin: "nà", english: "that" },
+      {chinese: "(那儿", pinyin: "nàr", english: "there" },
+      {chinese: "哪", pinyin: "nǎ", english: "which" },
+      {chinese: "哪儿", pinyin: "nǎr", english: "where" },
+      {chinese: "谁", pinyin: "shéi", english: "who" },
+      {chinese: "什么", pinyin: "shénme", english: "what, why" },
+      {chinese: "多少", pinyin: "duōshǎo", english: "how many, how much" },
+      {chinese: "几", pinyin: "jǐ", english: "a few, how many" },
+      {chinese: "怎么", pinyin: "zěnme", english: "how" },
+      {chinese: "怎么样", pinyin: "zěnmeyàng", english: "how about" }
+    ];
+
+    let currentQuestion = {};
+    let currentCategory = 0;
+
+    function startQuiz() {
+      currentCategory = parseInt(document.getElementById("category").value);
+      document.getElementById("category-select").classList.add("hidden");
+      document.getElementById("question-area").classList.remove("hidden");
+      generateQuestion();
+    }
+
+    function goBack() {
+      document.getElementById("category-select").classList.remove("hidden");
+      document.getElementById("question-area").classList.add("hidden");
+      document.getElementById("feedback").textContent = "";
+    }
+
+    function generateQuestion() {
+      const randomItem = vocab[Math.floor(Math.random() * vocab.length)];
+      let questionText = "";
+      let correctAnswer = "";
+      let options = [];
+
+      const shuffled = [...vocab].sort(() => Math.random() - 0.5);
+
+      switch (currentCategory) {
+        case 0:
+          questionText = `${randomItem.chinese} in pinyin?`;
+          correctAnswer = randomItem.pinyin;
+          options = shuffled.map(item => item.pinyin);
+          break;
+        case 1:
+          questionText = `${randomItem.chinese} in English?`;
+          correctAnswer = randomItem.english;
+          options = shuffled.map(item => item.english);
+          break;
+        case 2:
+          questionText = `${randomItem.pinyin} in Chinese symbol?`;
+          correctAnswer = randomItem.chinese;
+          options = shuffled.map(item => item.chinese);
+          break;
+        case 3:
+          questionText = `${randomItem.pinyin} in English?`;
+          correctAnswer = randomItem.english;
+          options = shuffled.map(item => item.english);
+          break;
+        case 4:
+          questionText = `${randomItem.english} in Chinese symbol?`;
+          correctAnswer = randomItem.chinese;
+          options = shuffled.map(item => item.chinese);
+          break;
+        case 5:
+          questionText = `${randomItem.english} in Pinyin?`;
+          correctAnswer = randomItem.pinyin;
+          options = shuffled.map(item => item.pinyin);
+          break;
+      }
+
+      currentQuestion = { correctAnswer };
+
+      document.getElementById("question").textContent = questionText;
+      const choicesContainer = document.getElementById("choices");
+      choicesContainer.innerHTML = "";
+
+      options.forEach(opt => {
+        const btn = document.createElement("button");
+        btn.textContent = opt;
+        btn.onclick = () => checkAnswer(opt);
+        choicesContainer.appendChild(btn);
+      });
+
+      document.getElementById("feedback").textContent = "";
+    }
+
+    function checkAnswer(answer) {
+      const feedback = document.getElementById("feedback");
+      if (answer === currentQuestion.correctAnswer) {
+        feedback.textContent = "✅ Correct!";
+        feedback.className = "correct";
+      } else {
+        feedback.textContent = `❌ Wrong! The correct answer was: ${currentQuestion.correctAnswer}`;
+        feedback.className = "wrong";
+      }
+    }
+
+    function nextQuestion() {
+      generateQuestion();
+    }
+  </script>
+</body>
+</html>
